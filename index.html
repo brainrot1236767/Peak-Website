@@ -1,0 +1,181 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Simple Left-Bar Gallery</title>
+  <style>
+    :root{
+      --bar-width:260px;
+      --bg:#0f1724;
+      --panel:#0b1320;
+      --accent:#76c7ff;
+      --muted:#98a1ad;
+    }
+    html,body{height:100%;margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,'Helvetica Neue',Arial}
+    body{background:linear-gradient(180deg,#071028 0%, #0b1726 100%);color:var(--muted);overflow:hidden}
+
+    /* Left vertical bar */
+    .left-bar{
+      position:fixed;left:0;top:0;bottom:0;width:var(--bar-width);
+      background:linear-gradient(180deg, rgba(0,0,0,0.8), rgba(0,0,0,0.8));
+      box-shadow:2px 0 20px rgba(0,0,0,0.6);padding:24px;display:flex;flex-direction:column;align-items:flex-start;gap:12px;z-index:20;
+    }
+
+    .logo{font-weight:700;color:var(--accent);letter-spacing:0.06em;font-size:18px}
+    .subtitle{font-size:12px;color:rgba(255,255,255,0.35)}
+
+    /* Animated large text pieces that splash around the left side */
+    .splash-wrap{position:relative;flex:1;width:100%;overflow:visible}
+    .splash{
+      position:absolute;left:0;top:0;transform-origin:0 0;opacity:0.12;font-weight:800;color:var(--accent);
+      mix-blend-mode:screen;pointer-events:none;user-select:none;white-space:nowrap
+    }
+    @keyframes float1{0%{transform:translate(0,0) rotate(0deg) scale(1);}50%{transform:translate(-8px,40px) rotate(-6deg) scale(1.06);}100%{transform:translate(0,0) rotate(0) scale(1);}}
+    @keyframes float2{0%{transform:translate(0,0) rotate(0deg) scale(1);}50%{transform:translate(10px,80px) rotate(8deg) scale(1.08);}100%{transform:translate(0,0) rotate(0) scale(1);}}
+    @keyframes float3{0%{transform:translate(0,0) rotate(0deg) scale(1);}50%{transform:translate(-6px,120px) rotate(-10deg) scale(1.12);}100%{transform:translate(0,0) rotate(0) scale(1);}}
+
+    .splash.one{font-size:64px;left:8px;top:8px;animation:float1 6s ease-in-out infinite}
+    .splash.two{font-size:48px;left:18px;top:60px;animation:float2 8s ease-in-out infinite}
+    .splash.three{font-size:88px;left:-6px;top:120px;animation:float3 10s ease-in-out infinite}
+    .splash.faint{opacity:0.06;font-size:140px;left:-20px;top:240px;animation:float1 14s linear infinite}
+    /* Top title */
+    header{position:fixed;left:var(--bar-width);right:0;top:0;height:72px;display:flex;align-items:center;padding:0 28px;z-index:15}
+    .title{font-size:20px;font-weight:700;color:#e6eefb}
+    .tag{margin-left:12px;font-size:12px;color:var(--muted)}
+
+    /* Right / main gallery area */
+    main{position:fixed;left:var(--bar-width);right:0;top:72px;bottom:0;padding:28px;overflow:auto}
+    .gallery{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:16px}
+    .card{background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));border-radius:12px;padding:8px;box-shadow:0 6px 18px rgba(2,6,23,0.6);overflow:hidden;display:flex;flex-direction:column}
+    .card img{width:100%;height:200px;object-fit:cover;border-radius:8px}
+    .caption{padding:10px 6px 6px 6px;color:var(--muted);font-size:13px}
+
+    /* responsive tweaks */
+    @media(max-width:900px){
+      :root{--bar-width:200px}
+      .splash.one{font-size:44px}
+      .splash.three{font-size:64px}
+    }
+    @media(max-width:640px){
+      .left-bar{display:none}
+      header{left:0}
+      main{left:0}
+    }
+
+    /* small helper when images are missing */
+    .placeholder{display:flex;align-items:center;justify-content:center;height:200px;border-radius:8px;background:linear-gradient(90deg, rgba(255,255,255,0.01), rgba(255,255,255,0.005));color:rgba(255,255,255,0.12);font-weight:700}
+  </style>
+</head>
+<body>
+  <aside class="left-bar" aria-hidden="true">
+    <div class="logo">My PEAK Website</div>
+    <div class="subtitle">I hate fdt17 btw idk if you noticed</div>
+
+    <div class="splash-wrap" aria-hidden="true">
+      <div class="splash one">we,</div>
+      <div class="splash two">yes</div>
+      <div class="splash three">WE</div>
+      <div class="splash faint">hate fdt17</div>
+    </div>
+
+    <div style="font-size:12px;color:rgba(255,255,255,0.22)">Fd digger btw</div>
+  </aside>
+
+  <header>
+    <div class="title">Top reasons  why i hate fd <span class="tag">— we, yes WE hate fdt17</span></div>
+  </header>
+
+  <main>
+<video width="100%" style="aspect-ratio:16/9; border-radius:8px;" controls autoplay muted loop>
+  <source src="Video1.mp4" type="video/mp4">
+</video>
+  <div class="caption">The Reasons</div>
+</div>
+    <div id="gallery" class="gallery" aria-live="polite">
+      <!-- JS will populate image cards here -->
+    </div>
+  </main>
+
+  <script>
+    // The script attempts to load images named Picture1.png, Picture2.png, ... Picture12.png
+    // Put image files named Picture1.png, Picture2.png, Picture3.png, etc. in the same folder as this HTML file.
+
+    (function(){
+      const gallery = document.getElementById('gallery');
+      const max = 12; // how many PictureN to try
+      const exts = ['png','jpg','jpeg','webp','gif'];
+
+      function tryLoad(name){
+        return new Promise((resolve)=>{
+          const img = new Image();
+          img.onload = ()=>resolve({ok:true,src:img.src});
+          img.onerror = ()=>resolve({ok:false});
+          img.src = name;
+        })
+      }
+
+      async function populate(){
+        let foundAny=false;
+        for(let i=1;i<=max;i++){
+          // primary filename is Picture{i}.png (but we try other extensions too)
+          let loaded=false;
+          const base = `Picture${i}`;
+          for(const e of exts){
+            const filename = `${base}.${e}`;
+            const res = await tryLoad(filename);
+            if(res.ok){
+              addCard(res.src, `Fd is a digger ${i}`);
+              foundAny=true;
+              loaded=true;
+              break;
+            }
+          }
+          if(!loaded){
+            // add a visible placeholder card that shows the expected filename so you can drop files easily
+            const phCard = document.createElement('div'); phCard.className='card';
+            phCard.innerHTML = `<div class="placeholder">Expected file:<br><strong>${base}.png</strong></div>`;
+            gallery.appendChild(phCard);
+          }
+        }
+        // (If you have at least one real image, it will show alongside placeholders.)
+      }
+
+      function addCard(src, caption){
+        const card = document.createElement('div'); card.className='card';
+        const img = document.createElement('img'); img.src=src; img.alt=caption;
+        const cap = document.createElement('div'); cap.className='caption'; cap.textContent = caption;
+        card.appendChild(img); card.appendChild(cap); gallery.appendChild(card);
+      }
+
+      populate();
+
+      // Small interaction for splashes (optional)
+      const splashTexts = ['CREATE','PLAY','EXPERIENCE','IMAGINE','EXPLORE','DREAM'];
+      document.querySelectorAll('.splash').forEach(el=>{
+        el.addEventListener('click', ()=>{
+          el.textContent = splashTexts[Math.floor(Math.random()*splashTexts.length)];
+        })
+      });
+    })();
+  </script>
+<!-- Add this inside the <body> tag, preferably near the end, just before </body> -->
+<audio id="mySound" src="yoursound.mp3" preload="auto"></audio>
+
+<script>
+  const sound = document.getElementById('mySound');
+
+  // Try to play sound on page load (may be blocked by browser)
+  window.addEventListener('load', () => {
+    sound.play().catch(() => {
+      console.log('Autoplay blocked. Click anywhere to play sound.');
+    });
+  });
+
+  // Play on first user interaction if autoplay is blocked
+  document.addEventListener('click', () => {
+    sound.play();
+  }, { once: true });
+</script>
+</body>
+</html>
